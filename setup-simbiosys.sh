@@ -7,7 +7,7 @@ MYSQL_USER="Analista"
 MYSQL_PASS="urubu100"
 BACKEND_REPO="https://github.com/projeto-simbiosys/BackEnd.git"
 FRONTEND_REPO="https://github.com/projeto-simbiosys/FrontEnd.git"
-FRONTEND_BRANCH="development"
+FRONTEND_BRANCH="azure-aplicada"
 DATABASE_REPO="https://github.com/projeto-simbiosys/Database.git"
 DATABASE_SCRIPT="Banco-Script.sql"
 
@@ -16,13 +16,15 @@ echo "🚀 Iniciando a instalação e implantação..."
 # Etapa 1: Atualizar o sistema e instalar pacotes essenciais
 echo "📦 Atualizando sistema e instalando dependências..."
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y git curl gnupg build-essential mysql-server maven unzip
+sudo apt install -y git curl gnupg build-essential mysql-server unzip maven
 
 # Etapa 2: Instalar Java 21
 echo "☕ Instalando Java 21..."
 sudo add-apt-repository ppa:openjdk-r/ppa -y
 sudo apt update
 sudo apt install -y openjdk-21-jdk
+
+# Confirmar Java 21
 java -version
 
 # Etapa 3: Instalar Node.js 20 e PM2
@@ -58,7 +60,7 @@ else
 fi
 
 # Etapa 6: Corrigir application.properties se necessário
-echo "🧹 Corrigindo application.properties..."
+echo "🧹 Corrigindo application.properties (UTF-8)..."
 cd /home/$VM_USER/BackEnd
 iconv -f ISO-8859-1 -t UTF-8 src/main/resources/application.properties -o src/main/resources/application.properties.utf8
 mv src/main/resources/application.properties.utf8 src/main/resources/application.properties
@@ -67,25 +69,21 @@ mv src/main/resources/application.properties.utf8 src/main/resources/application
 echo "⚙️ Compilando o backend com Maven (Java 21)..."
 ./mvnw clean package -DskipTests
 
-# Etapa 8: Corrigir import quebrado do FrontEnd
-echo "🧠 Corrigindo import do CardKPI..."
-sed -i 's:from "../../components/CardKPI":from "../../components/CardKPI/index.jsx":g' /home/$VM_USER/FrontEnd/src/pages/Dashboard/index.jsx
-
-# Etapa 9: Build do FrontEnd
-echo "🏗️ Buildando o front..."
+# Etapa 8: Build do FrontEnd (branch correta)
+echo "🏗️ Buildando o frontend..."
 cd /home/$VM_USER/FrontEnd
 rm -rf node_modules package-lock.json dist
 npm install
 npm run build
 
-# Etapa 10: Iniciar com PM2
+# Etapa 9: Iniciar com PM2
 echo "🚀 Iniciando serviços com PM2..."
 pm2 delete all
 pm2 start "java -jar /home/$VM_USER/BackEnd/target/*.jar" --name backend
-pm2 start "serve -s dist -l 3000" --name frontend
+pm2 start "serve -s /home/$VM_USER/FrontEnd/dist -l 3000" --name frontend
 pm2 save
 
-# Etapa 11: Configurar PM2 no boot
+# Etapa 10: Configurar PM2 no boot
 echo "🧩 Configurando PM2 para iniciar com o sistema..."
 pm2 startup systemd -u $VM_USER --hp /home/$VM_USER | sudo bash
 
@@ -93,6 +91,7 @@ echo -e "\n✅ Implantação concluída com sucesso!"
 echo "🌐 Frontend: http://SEU_IP:3000"
 echo "☕ Backend:  http://SEU_IP:8080"
 echo "📋 Verifique com: pm2 list"
+
 
 
 
