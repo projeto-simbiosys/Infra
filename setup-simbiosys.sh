@@ -2,6 +2,22 @@
 set -e # Sai imediatamente se um comando falhar
 set -x # Imprime os comandos e seus argumentos conforme são executados
 
+# Função para esperar pelo lock do apt
+wait_for_apt_lock() {
+    MAX_ATTEMPTS=10
+    ATTEMPT=0
+    while fuser /var/lib/dpkg/lock >/dev/null 2>&1 || fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || fuser /var/cache/apt/archives/lock >/dev/null 2>&1;
+    do
+        if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
+            echo "Erro: Não foi possível obter o lock do apt após $MAX_ATTEMPTS tentativas. Por favor, verifique processos apt em execução e tente novamente."
+            exit 1
+        fi
+        echo "Aguardando liberação do lock do apt... Tentativa $((ATTEMPT+1)) de $MAX_ATTEMPTS"
+        sleep 10 # Espera 10 segundos antes de tentar novamente
+        ATTEMPT=$((ATTEMPT+1))
+    done
+}
+
 # Variáveis
 VM_USER="analista"
 MYSQL_DB="SIMBIOSYS"
@@ -17,13 +33,18 @@ echo "🚀 Iniciando a instalação e implantação..."
 
 # Etapa 1: Atualizar o sistema e instalar pacotes essenciais
 echo "📦 Atualizando sistema e instalando dependências..."
+wait_for_apt_lock
 sudo apt update && sudo apt upgrade -y
+wait_for_apt_lock
 sudo apt install -y git curl gnupg build-essential mysql-server unzip maven
 
 # Etapa 2: Instalar Java 21
 echo "☕ Instalando Java 21..."
+wait_for_apt_lock
 sudo add-apt-repository ppa:openjdk-r/ppa -y
+wait_for_apt_lock
 sudo apt update
+wait_for_apt_lock
 sudo apt install -y openjdk-21-jdk
 
 # Confirmar Java 21
@@ -32,6 +53,7 @@ java -version
 # Etapa 3: Instalar Node.js 20 e PM2
 echo "🌐 Instalando Node.js e PM2..."
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+wait_for_apt_lock
 sudo apt install -y nodejs
 sudo npm install -g pm2 serve
 
@@ -48,15 +70,17 @@ echo "🛢️ Configurando MySQL..."
 sudo systemctl start mysql
 sudo mysql <<EOF
 CREATE DATABASE IF NOT EXISTS $MYSQL_DB;
-CREATE USER IF NOT EXISTS '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASS';
-GRANT ALL PRIVILEGES ON $MYSQL_DB.* TO '$MYSQL_USER'@'localhost';
+CREATE USER IF NOT EXISTS 
+\'$MYSQL_USER\'@\'$MYSQL_PASS\';
+GRANT ALL PRIVILEGES ON $MYSQL_DB.* TO 
+\'$MYSQL_USER\'@\'$MYSQL_PASS\';
 FLUSH PRIVILEGES;
 EOF
 
-# Popular banco de dados
+# Popular banco de dados - Removendo o comando CREATE DATABASE do script SQL antes de importar
 if [ -f "/home/$VM_USER/Database/$DATABASE_SCRIPT" ]; then
-    echo "📥 Importando script SQL..."
-    mysql -u $MYSQL_USER -p$MYSQL_PASS $MYSQL_DB < /home/$VM_USER/Database/$DATABASE_SCRIPT
+    echo "📥 Importando script SQL (ignorando CREATE DATABASE)..."
+    grep -v "^CREATE DATABASE" /home/$VM_USER/Database/$DATABASE_SCRIPT | mysql -u $MYSQL_USER -p$MYSQL_PASS $MYSQL_DB
 else
     echo "⚠️ Script de banco de dados não encontrado."
 fi
