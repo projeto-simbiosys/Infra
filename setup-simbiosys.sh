@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e # Sai imediatamente se um comando falhar
+set -x # Imprime os comandos e seus argumentos conforme são executados
 
 # Variáveis
 VM_USER="analista"
@@ -7,7 +9,7 @@ MYSQL_USER="Analista"
 MYSQL_PASS="urubu100"
 BACKEND_REPO="https://github.com/projeto-simbiosys/BackEnd.git"
 FRONTEND_REPO="https://github.com/projeto-simbiosys/FrontEnd.git"
-FRONTEND_BRANCH="azure-aplicada"
+FRONTEND_BRANCH="azure-aplicada" # Mantendo a branch do script fornecido pelo usuário
 DATABASE_REPO="https://github.com/projeto-simbiosys/Database.git"
 DATABASE_SCRIPT="Banco-Script.sql"
 
@@ -67,6 +69,8 @@ mv src/main/resources/application.properties.utf8 src/main/resources/application
 
 # Etapa 7: Build do BackEnd
 echo "⚙️ Compilando o backend com Maven (Java 21)..."
+cd /home/$VM_USER/BackEnd # Garante que estamos no diretório correto
+chmod +x mvnw # Garante que o script mvnw seja executável
 ./mvnw clean package -DskipTests
 
 # Etapa 8: Build do FrontEnd (branch correta)
@@ -91,7 +95,5 @@ echo -e "\n✅ Implantação concluída com sucesso!"
 echo "🌐 Frontend: http://SEU_IP:3000"
 echo "☕ Backend:  http://SEU_IP:8080"
 echo "📋 Verifique com: pm2 list"
-
-
 
 
