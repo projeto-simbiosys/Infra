@@ -34,18 +34,18 @@ echo "🚀 Iniciando a instalação e implantação..."
 # Etapa 1: Atualizar o sistema e instalar pacotes essenciais
 echo "📦 Atualizando sistema e instalando dependências..."
 wait_for_apt_lock
-sudo apt update && sudo apt upgrade -y
+sudo DEBIAN_FRONTEND=noninteractive apt update && sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
 wait_for_apt_lock
-sudo apt install -y git curl gnupg build-essential mysql-server unzip maven
+sudo DEBIAN_FRONTEND=noninteractive apt install -y git curl gnupg build-essential mysql-server unzip maven
 
 # Etapa 2: Instalar Java 21
 echo "☕ Instalando Java 21..."
 wait_for_apt_lock
-sudo add-apt-repository ppa:openjdk-r/ppa -y
+sudo DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:openjdk-r/ppa -y
 wait_for_apt_lock
-sudo apt update
+sudo DEBIAN_FRONTEND=noninteractive apt update
 wait_for_apt_lock
-sudo apt install -y openjdk-21-jdk
+sudo DEBIAN_FRONTEND=noninteractive apt install -y openjdk-21-jdk
 
 # Confirmar Java 21
 java -version
@@ -54,7 +54,7 @@ java -version
 echo "🌐 Instalando Node.js e PM2..."
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 wait_for_apt_lock
-sudo apt install -y nodejs
+sudo DEBIAN_FRONTEND=noninteractive apt install -y nodejs
 sudo npm install -g pm2 serve
 
 # Etapa 4: Clonar os repositórios
