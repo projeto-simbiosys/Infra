@@ -23,6 +23,24 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
 }
 
+variable "instance-type" {
+  description = "Tipo de instância EC2."
+  type        = string
+  default     = "t2.micro"
+}
+
+variable "key-pair-name" {
+  description = "Nome do par de chaves para acessar as instâncias EC2."
+  type        = string
+  default     = "key_simbiosys"
+}
+
+# Key PEM
+resource "aws_key_pair" "generated-key" {
+  key_name   = var.key-pair-name
+  public_key = file("key_simbiosys.pem.pub")
+}
+
 # VPC
 resource "aws_vpc" "vpc-tf" {
   cidr_block       = "10.0.0.0/24"
@@ -77,7 +95,7 @@ resource "aws_nat_gateway" "nat-gateway-tf" {
   tags = { Name = "nat-gateway-simbiosys" }
 }
 
-# EIP para o NAT Gateway
+# IP Elástico para o NAT Gateway
 resource "aws_eip" "nat-eip-tf" {
   domain = "vpc"
 }
@@ -159,7 +177,6 @@ resource "aws_security_group" "private-security-group-tf" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-
   ingress {
     from_port   = 3306
     to_port     = 3306
@@ -172,5 +189,33 @@ resource "aws_security_group" "private-security-group-tf" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# IP Elástico do proxy reverso
+resource "aws_eip" "eip-tf" {
+  domain = "vpc"
+
+  instance = aws_instance.reverse-proxy-tf.id
+
+  tags = {
+    Name = "eip-simbiosys"
+  }
+}
+
+# Instância do proxy reverso
+resource "aws_instance" "reverse-proxy-tf" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance-type
+  subnet_id                   = aws_subnet.subnet-public-tf.id
+  vpc_security_group_ids      = [aws_security_group.public-security-group-tf.id]
+  associate_public_ip_address = false
+  key_name                    = aws_key_pair.generated-key.key_name
+
+  # Lê script de configuração
+  user_data = file("${path.module}/scripts/setup_reverse_proxy_nginx.sh")
+
+  tags = {
+    Name = "reverse-proxy-simbiosys"
   }
 }

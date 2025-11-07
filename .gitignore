@@ -8,3 +8,7 @@ terraform.tfstate.backup
 # Ignorar variáveis sensíveis
 *.tfvars
 !.tfvars.example
+
+# Ignorar Keys SSH
+*.pem
+*.pem.pub
