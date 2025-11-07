@@ -1,0 +1,10 @@
+# Ignorar cache da Terraform
+.terraform/
+
+# Ignorar estado local
+terraform.tfstate
+terraform.tfstate.backup
+
+# Ignorar variáveis sensíveis
+*.tfvars
+!.tfvars.example
