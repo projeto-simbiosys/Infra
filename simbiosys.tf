@@ -88,6 +88,11 @@ resource "aws_route_table" "public-rt-tf" {
   }
 }
 
+resource "aws_route_table_association" "public-rt-assoc-tf" {
+  subnet_id      = aws_subnet.subnet-public-tf.id
+  route_table_id = aws_route_table.public-rt-tf.id
+}
+
 # NAT Gateway
 resource "aws_nat_gateway" "nat-gateway-tf" {
   allocation_id = aws_eip.nat-eip-tf.id
@@ -109,6 +114,11 @@ resource "aws_route_table" "private-rt-tf" {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat-gateway-tf.id
   }
+}
+
+resource "aws_route_table_association" "private-rt-assoc-tf" {
+  subnet_id      = aws_subnet.subnet-private-tf.id
+  route_table_id = aws_route_table.private-rt-tf.id
 }
 
 # Public Security group
@@ -203,7 +213,7 @@ resource "aws_eip" "eip-tf" {
   }
 }
 
-# Instância do proxy reverso
+# Instância do proxy reverso / load balancer
 resource "aws_instance" "reverse-proxy-tf" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance-type
@@ -217,5 +227,90 @@ resource "aws_instance" "reverse-proxy-tf" {
 
   tags = {
     Name = "reverse-proxy-simbiosys"
+  }
+}
+
+resource "aws_instance" "front-instance-1-tf" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance-type
+  subnet_id                   = aws_subnet.subnet-private-tf.id
+  vpc_security_group_ids      = [aws_security_group.private-security-group-tf.id]
+  associate_public_ip_address = false
+  private_ip                  = "10.0.0.135"
+  key_name                    = aws_key_pair.generated-key.key_name
+
+  # Lê script de configuração
+  user_data = file("${path.module}/scripts/setup_frontend_nginx.sh")
+
+  tags = {
+    Name = "front-instance-1-simbiosys"
+  }
+}
+
+resource "aws_instance" "front-instance-2-tf" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance-type
+  subnet_id                   = aws_subnet.subnet-private-tf.id
+  vpc_security_group_ids      = [aws_security_group.private-security-group-tf.id]
+  associate_public_ip_address = false
+  private_ip                  = "10.0.0.136"
+  key_name                    = aws_key_pair.generated-key.key_name
+
+  # Lê script de configuração
+  user_data = file("${path.module}/scripts/setup_frontend_nginx.sh")
+
+  tags = {
+    Name = "front-instance-2-simbiosys"
+  }
+}
+
+resource "aws_instance" "back-instance-1-tf" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance-type
+  subnet_id                   = aws_subnet.subnet-private-tf.id
+  vpc_security_group_ids      = [aws_security_group.private-security-group-tf.id]
+  associate_public_ip_address = false
+  private_ip                  = "10.0.0.235"
+  key_name                    = aws_key_pair.generated-key.key_name
+
+  # Lê script de configuração
+  user_data = file("${path.module}/scripts/setup_backend.sh")
+
+  tags = {
+    Name = "back-instance-1-simbiosys"
+  }
+}
+
+resource "aws_instance" "back-instance-2-tf" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance-type
+  subnet_id                   = aws_subnet.subnet-private-tf.id
+  vpc_security_group_ids      = [aws_security_group.private-security-group-tf.id]
+  associate_public_ip_address = false
+  private_ip                  = "10.0.0.236"
+  key_name                    = aws_key_pair.generated-key.key_name
+
+  # Lê script de configuração
+  user_data = file("${path.module}/scripts/setup_backend.sh")
+
+  tags = {
+    Name = "back-instance-2-simbiosys"
+  }
+}
+
+resource "aws_instance" "mysql-instance-tf" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance-type
+  subnet_id                   = aws_subnet.subnet-private-tf.id
+  vpc_security_group_ids      = [aws_security_group.private-security-group-tf.id]
+  associate_public_ip_address = false
+  private_ip                  = "10.0.0.245"
+  key_name                    = aws_key_pair.generated-key.key_name
+
+  # Lê script de configuração
+  user_data = file("${path.module}/scripts/setup_mysql.sh")
+
+  tags = {
+    Name = "mysql-instance-simbiosys"
   }
 }
