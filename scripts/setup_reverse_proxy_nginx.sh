@@ -1,5 +1,14 @@
 #!/bin/bash
-set -e
+set -ex
+
+# Força uso de IPv4
+echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
+
+# Espera NAT estar pronto
+until ping -c1 google.com &>/dev/null; do
+  echo "Aguardando conectividade com a internet..."
+  sleep 5
+done
 
 apt update -y
 apt install -y nginx
@@ -24,4 +33,4 @@ server {
 }
 EOL
 
-systemctl restart nginx
+systemctl reload nginx
