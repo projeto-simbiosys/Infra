@@ -16,8 +16,8 @@ apt install -y nginx
 # Configura proxy reverso
 cat > /etc/nginx/sites-available/default <<EOL
 upstream webapp {
-    server 10.0.0.135:8080;
-    server 10.0.0.136:8080;
+    server 10.0.0.135:80;
+    server 10.0.0.136:80;
 }
 
 server {

@@ -17,14 +17,13 @@ sudo sed -i 's/^bind-address\s*=.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.con
 
 systemctl restart mysql
 
-
 # Clona o repositório
 cd /home/ubuntu
 git clone https://github.com/projeto-simbiosys/Database.git
 cd Database
 git checkout agnostic-script
 
-MYSQL_USER="simbiosys"
+MYSQL_USER="root"
 MYSQL_SENHA="0310kaka"
 
 sudo mysql <<EOF

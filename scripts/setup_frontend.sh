@@ -10,15 +10,13 @@ until ping -c1 google.com &>/dev/null; do
   sleep 5
 done
 
-# Atualiza pacotes
-sudo apt update -y
-
-sudo apt install docker.io -y
+apt update -y
+apt install docker.io -y
 
 sudo usermod -a -G docker $(whoami)
 
 sudo systemctl start docker
 
-sudo docker pull castrito/simbiosys-back-end:latest
+sudo docker pull castrito/simbiosys-front-end:latest
 
-sudo docker run --name simbiosys_backend -p 8082:8082 --restart always castrito/simbiosys-back-end:latest
+sudo docker run --name simbiosys-frontend -d -p 80:80 --restart always castrito/simbiosys-front-end:latest

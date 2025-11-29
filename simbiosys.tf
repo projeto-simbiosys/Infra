@@ -247,11 +247,12 @@ resource "aws_instance" "front-instance-1-tf" {
   key_name                    = aws_key_pair.generated-key.key_name
 
   # Lê script de configuração
-  user_data = file("${path.module}/scripts/setup_frontend_nginx.sh")
+  user_data = file("${path.module}/scripts/setup_frontend.sh")
 
   tags = {
     Name = "front-instance-1-simbiosys"
   }
+
 }
 
 resource "aws_instance" "front-instance-2-tf" {
@@ -264,11 +265,12 @@ resource "aws_instance" "front-instance-2-tf" {
   key_name                    = aws_key_pair.generated-key.key_name
 
   # Lê script de configuração
-  user_data = file("${path.module}/scripts/setup_frontend_nginx.sh")
+  user_data = file("${path.module}/scripts/setup_frontend.sh")
 
   tags = {
     Name = "front-instance-2-simbiosys"
   }
+
 }
 
 resource "aws_instance" "back-instance-1-tf" {
@@ -286,6 +288,7 @@ resource "aws_instance" "back-instance-1-tf" {
   tags = {
     Name = "back-instance-1-simbiosys"
   }
+
 }
 
 resource "aws_instance" "back-instance-2-tf" {
@@ -303,6 +306,7 @@ resource "aws_instance" "back-instance-2-tf" {
   tags = {
     Name = "back-instance-2-simbiosys"
   }
+
 }
 
 resource "aws_instance" "mysql-instance-tf" {
