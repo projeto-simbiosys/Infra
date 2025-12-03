@@ -24,6 +24,6 @@ sudo docker network create rabbit-network
 sudo docker pull castrito/simbiosys-consumer-rabbitmq:latest
 sudo docker pull rabbitmq:3.13-management
 
-sudo docker run -d --name rabbitmq --network rabbit-network -p 5672:5672 -p 15672:15672 --restart always rabbitmq:3.13-management
+sudo docker run -d --name rabbitmq --network rabbit-network -p 5672:5672 -p 15672:15672 -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin123 --restart always rabbitmq:3.13-management
 
 sudo docker run -d --name simbiosys_consumer_rabbitmq --network rabbit-network -p 8082:8082 --restart always castrito/simbiosys-consumer-rabbitmq:latest
