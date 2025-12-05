@@ -371,3 +371,21 @@ resource "aws_instance" "rabbitmq-instance-tf" {
   }
 
 }
+
+resource "aws_instance" "redis-instance-tf" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance-type
+  subnet_id                   = aws_subnet.subnet-private-tf.id
+  vpc_security_group_ids      = [aws_security_group.private-security-group-tf.id]
+  associate_public_ip_address = false
+  private_ip                  = "10.0.0.247"
+  key_name                    = aws_key_pair.generated-key.key_name
+
+  # Lê script de configuração
+  user_data = file("${path.module}/scripts/setup_redis.sh")
+
+  tags = {
+    Name = "redis-instance-simbiosys"
+  }
+
+}

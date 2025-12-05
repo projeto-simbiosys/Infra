@@ -21,4 +21,4 @@ sudo systemctl start docker
 
 sudo docker pull castrito/simbiosys-back-end:latest
 
-sudo docker run -d --name simbiosys_backend -p 8082:8082 --restart always castrito/simbiosys-back-end:latest
+sudo docker run -d --name simbiosys_backend -p 8082:8080 --restart always castrito/simbiosys-back-end:latest
