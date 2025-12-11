@@ -1,5 +1,9 @@
 # Infraestrutura do projeto SIMBIOSYS
 
+<p align="center">
+  <img src="https://imgur.com/6s2lH3n.png" alt="Simbiosys Logo">
+</p>
+
 <br>
 
 **Para rodar essa infraestrutura siga o seguinte roteiro abaixo:**
